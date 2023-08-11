@@ -1,4 +1,4 @@
-package com.example.searchfilms.presentation.poster
+import com.example.searchfilms.presentation.poster.PosterView
 
 class PosterPresenter(
     private val view: PosterView,

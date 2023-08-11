@@ -1,5 +1,6 @@
 package com.example.searchfilms.ui.movies
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -10,58 +11,47 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.searchfilms.util.Creator
 import com.example.searchfilms.ui.poster.PosterActivity
 import com.example.searchfilms.R
-import com.example.searchfilms.domain.models.Movie
-import com.example.searchfilms.presentation.movies.MoviesSearchViewModel
-import com.example.searchfilms.ui.movies.models.MoviesState
+import com.example.searchfilms.presentation.movies.MoviesView
 
-class MoviesActivity : ComponentActivity() {
+class MoviesActivity : Activity(), MoviesView {
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
 
-    private val adapter = MoviesAdapter(
-        object : MoviesAdapter.MovieClickListener {
-            override fun onMovieClick(movie: Movie) {
-                if (clickDebounce()) {
-                    val intent = Intent(this@MoviesActivity, PosterActivity::class.java)
-                    intent.putExtra("poster", movie.image)
-                    startActivity(intent)
-                }
-            }
-
-            override fun onFavoriteToggleClick(movie: Movie) {
-                // 1
-                viewModel.toggleFavorite(movie)
-            }
-
+    private val adapter = MoviesAdapter {
+        if (clickDebounce()) {
+            val intent = Intent(this, PosterActivity::class.java)
+            intent.putExtra("poster", it.image)
+            startActivity(intent)
         }
+    }
+
+    private var isClickAllowed = true
+
+    private val handler = Handler(Looper.getMainLooper())
+
+    private val moviesSearchPresenter = Creator.provideMoviesSearchPresenter(
+        moviesView = this,
+        context = this,
+        adapter = adapter,
     )
 
     private lateinit var queryInput: EditText
     private lateinit var placeholderMessage: TextView
     private lateinit var moviesList: RecyclerView
     private lateinit var progressBar: ProgressBar
-    private lateinit var textWatcher: TextWatcher
 
-    private var isClickAllowed = true
-
-    private val handler = Handler(Looper.getMainLooper())
-
-    private lateinit var viewModel: MoviesSearchViewModel
+    private var textWatcher: TextWatcher? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movies)
-
-        viewModel = ViewModelProvider(this, MoviesSearchViewModel.getViewModelFactory())[MoviesSearchViewModel::class.java]
 
         placeholderMessage = findViewById(R.id.placeholderMessage)
         queryInput = findViewById(R.id.queryInput)
@@ -76,7 +66,7 @@ class MoviesActivity : ComponentActivity() {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                viewModel.searchDebounce(
+                moviesSearchPresenter.searchDebounce(
                     changedText = s?.toString() ?: ""
                 )
             }
@@ -85,63 +75,15 @@ class MoviesActivity : ComponentActivity() {
             }
         }
         textWatcher?.let { queryInput.addTextChangedListener(it) }
-
-        viewModel.observeState().observe(this) {
-            render(it)
-        }
-
-        viewModel.observeShowToast().observe(this) {
-            showToast(it)
-        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
         textWatcher?.let { queryInput.removeTextChangedListener(it) }
+        moviesSearchPresenter.onDestroy()
     }
 
-    private fun showToast(additionalMessage: String) {
-        Toast.makeText(this, additionalMessage, Toast.LENGTH_LONG).show()
-    }
-
-    private fun render(state: MoviesState) {
-        when (state) {
-            is MoviesState.Content -> showContent(state.movies)
-            is MoviesState.Empty -> showEmpty(state.message)
-            is MoviesState.Error -> showError(state.errorMessage)
-            is MoviesState.Loading -> showLoading()
-        }
-    }
-
-    private fun showLoading() {
-        moviesList.visibility = View.GONE
-        placeholderMessage.visibility = View.GONE
-        progressBar.visibility = View.VISIBLE
-    }
-
-    private fun showError(errorMessage: String) {
-        moviesList.visibility = View.GONE
-        placeholderMessage.visibility = View.VISIBLE
-        progressBar.visibility = View.GONE
-
-        placeholderMessage.text = errorMessage
-    }
-
-    private fun showEmpty(emptyMessage: String) {
-        showError(emptyMessage)
-    }
-
-    private fun showContent(movies: List<Movie>) {
-        moviesList.visibility = View.VISIBLE
-        placeholderMessage.visibility = View.GONE
-        progressBar.visibility = View.GONE
-
-        adapter.movies.clear()
-        adapter.movies.addAll(movies)
-        adapter.notifyDataSetChanged()
-    }
-
-    private fun clickDebounce(): Boolean {
+    private fun clickDebounce() : Boolean {
         val current = isClickAllowed
         if (isClickAllowed) {
             isClickAllowed = false
@@ -150,4 +92,19 @@ class MoviesActivity : ComponentActivity() {
         return current
     }
 
+    override fun showPlaceholderMessage(isVisible: Boolean) {
+        placeholderMessage.visibility = if (isVisible) View.VISIBLE else View.GONE
+    }
+
+    override fun showMoviesList(isVisible: Boolean) {
+        moviesList.visibility = if (isVisible) View.VISIBLE else View.GONE
+    }
+
+    override fun showProgressBar(isVisible: Boolean) {
+        progressBar.visibility = if (isVisible) View.VISIBLE else View.GONE
+    }
+
+    override fun changePlaceholderText(newPlaceholderText: String) {
+        placeholderMessage.text = newPlaceholderText
+    }
 }

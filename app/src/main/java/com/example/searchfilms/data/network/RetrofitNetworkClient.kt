@@ -4,14 +4,13 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.example.searchfilms.data.NetworkClient
-import com.example.searchfilms.data.dto.MovieDetailsRequest
 import com.example.searchfilms.data.dto.MoviesSearchRequest
 import com.example.searchfilms.data.dto.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RetrofitNetworkClient( private val imdbService: IMDbApiService,
-                             private val context: Context) : NetworkClient {
+
+class RetrofitNetworkClient(private val context: Context) : NetworkClient {
 
     private val imdbBaseUrl = "https://imdb-api.com"
 
@@ -26,15 +25,11 @@ class RetrofitNetworkClient( private val imdbService: IMDbApiService,
         if (isConnected() == false) {
             return Response().apply { resultCode = -1 }
         }
-        if ((dto !is MoviesSearchRequest) && (dto !is MovieDetailsRequest)) {
+        if (dto !is MoviesSearchRequest) {
             return Response().apply { resultCode = 400 }
         }
 
-        val response = if (dto is MoviesSearchRequest) {
-            imdbService.searchMovies(dto.expression).execute()
-        } else {
-            imdbService.getMovieDetails((dto as MovieDetailsRequest).movieId).execute()
-        }
+        val response = imdbService.searchMovies(dto.expression).execute()
         val body = response.body()
         return if (body != null) {
             body.apply { resultCode = response.code() }
@@ -42,7 +37,6 @@ class RetrofitNetworkClient( private val imdbService: IMDbApiService,
             Response().apply { resultCode = response.code() }
         }
     }
-
     private fun isConnected(): Boolean {
         val connectivityManager = context.getSystemService(
             Context.CONNECTIVITY_SERVICE) as ConnectivityManager
