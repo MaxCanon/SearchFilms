@@ -1,6 +1,6 @@
 package com.example.searchfilms.util
 
-import PosterPresenter
+import com.example.searchfilms.presentation.poster.PosterPresenter
 import android.content.Context
 import com.example.searchfilms.data.MoviesRepositoryImpl
 import com.example.searchfilms.data.network.RetrofitNetworkClient
@@ -10,7 +10,6 @@ import com.example.searchfilms.domain.impl.MoviesInteractorImpl
 import com.example.searchfilms.presentation.movies.MoviesSearchPresenter
 import com.example.searchfilms.presentation.movies.MoviesView
 import com.example.searchfilms.presentation.poster.PosterView
-import com.example.searchfilms.ui.movies.MoviesAdapter
 
 object Creator {
     private fun getMoviesRepository(context: Context): MoviesRepository {
@@ -24,12 +23,10 @@ object Creator {
     fun provideMoviesSearchPresenter(
         moviesView: MoviesView,
         context: Context,
-        adapter: MoviesAdapter
     ): MoviesSearchPresenter {
         return MoviesSearchPresenter(
             view = moviesView,
             context = context,
-            adapter = adapter
         )
     }
 

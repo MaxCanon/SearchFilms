@@ -1,6 +1,6 @@
 package com.example.searchfilms.ui.poster
 
-import PosterPresenter
+import com.example.searchfilms.presentation.poster.PosterPresenter
 import android.app.Activity
 import android.os.Bundle
 import android.widget.ImageView
