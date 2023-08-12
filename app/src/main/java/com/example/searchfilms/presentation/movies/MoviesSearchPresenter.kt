@@ -1,16 +1,13 @@
 package com.example.searchfilms.presentation.movies
 
 
-import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.widget.Toast
 import com.example.searchfilms.R
 import com.example.searchfilms.domain.api.MoviesInteractor
 import com.example.searchfilms.domain.models.Movie
-import com.example.searchfilms.ui.movies.MoviesAdapter
 import com.example.searchfilms.util.Creator
 
 class MoviesSearchPresenter(
@@ -82,7 +79,7 @@ class MoviesSearchPresenter(
             view.updateMoviesList(movies)
             view.changePlaceholderText(text)
             if (additionalMessage.isNotEmpty()) {
-                view.showMessage(additionalMessage)
+                view.showToast(additionalMessage)
             }
         } else {
             view.showPlaceholderMessage(false)

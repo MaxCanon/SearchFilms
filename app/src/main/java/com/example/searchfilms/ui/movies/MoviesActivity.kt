@@ -115,7 +115,7 @@ class MoviesActivity : Activity(), MoviesView {
         adapter.notifyDataSetChanged()
     }
 
-    override fun showMessage(additionalMessage: String) {
+    override fun showToast(additionalMessage: String) {
         Toast.makeText(this, additionalMessage, Toast.LENGTH_LONG).show()
     }
 }
