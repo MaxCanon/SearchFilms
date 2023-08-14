@@ -1,4 +1,4 @@
-package com.example.searchfilms.ui.movies
+package com.example.searchfilms.presentation.movies
 
 import com.example.searchfilms.domain.models.Movie
 
@@ -11,7 +11,7 @@ sealed interface MoviesState {
     ) : MoviesState
 
     data class Error(
-        val errorMessage: String
+        val message: String
     ) : MoviesState
 
     data class Empty(
