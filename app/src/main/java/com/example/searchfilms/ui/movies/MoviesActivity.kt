@@ -12,13 +12,14 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.searchfilms.ui.poster.PosterActivity
 import com.example.searchfilms.R
 import com.example.searchfilms.domain.models.Movie
-import com.example.searchfilms.presentation.movies.MoviesSearchViewModel
+import com.example.searchfilms.presentation.movies.MoviesState
+import com.example.searchfilms.presentation.movies.MoviesViewModel
+import com.example.searchfilms.ui.details.DetailsActivity
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MoviesActivity : ComponentActivity() {
 
@@ -26,10 +27,13 @@ class MoviesActivity : ComponentActivity() {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
 
+    private val viewModel by viewModel<MoviesViewModel>()
+
     private val adapter = MoviesAdapter {
         if (clickDebounce()) {
-            val intent = Intent(this, PosterActivity::class.java)
+            val intent = Intent(this, DetailsActivity::class.java)
             intent.putExtra("poster", it.image)
+            intent.putExtra("id", it.id)
             startActivity(intent)
         }
     }
@@ -40,17 +44,14 @@ class MoviesActivity : ComponentActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var textWatcher: TextWatcher
 
+
     private var isClickAllowed = true
 
     private val handler = Handler(Looper.getMainLooper())
 
-    private lateinit var viewModel: MoviesSearchViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_movies)
-
-        viewModel = ViewModelProvider(this, MoviesSearchViewModel.getViewModelFactory())[MoviesSearchViewModel::class.java]
 
         placeholderMessage = findViewById(R.id.placeholderMessage)
         queryInput = findViewById(R.id.queryInput)
@@ -89,7 +90,7 @@ class MoviesActivity : ComponentActivity() {
         textWatcher?.let { queryInput.removeTextChangedListener(it) }
     }
 
-    private fun showToast(additionalMessage: String) {
+    private fun showToast(additionalMessage: String?) {
         Toast.makeText(this, additionalMessage, Toast.LENGTH_LONG).show()
     }
 
@@ -97,7 +98,7 @@ class MoviesActivity : ComponentActivity() {
         when (state) {
             is MoviesState.Content -> showContent(state.movies)
             is MoviesState.Empty -> showEmpty(state.message)
-            is MoviesState.Error -> showError(state.errorMessage)
+            is MoviesState.Error -> showError(state.message)
             is MoviesState.Loading -> showLoading()
         }
     }
@@ -138,5 +139,4 @@ class MoviesActivity : ComponentActivity() {
         }
         return current
     }
-
 }

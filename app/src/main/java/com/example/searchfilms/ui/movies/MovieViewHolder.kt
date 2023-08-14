@@ -1,6 +1,5 @@
 package com.example.searchfilms.ui.movies
 
-import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -18,7 +17,6 @@ class MovieViewHolder(parent: ViewGroup) :
     var cover: ImageView = itemView.findViewById(R.id.cover)
     var title: TextView = itemView.findViewById(R.id.title)
     var description: TextView = itemView.findViewById(R.id.description)
-
 
     fun bind(movie: Movie) {
         Glide.with(itemView)

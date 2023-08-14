@@ -1,4 +1,4 @@
-package com.example.searchfilms.ui.movies
+package com.example.searchfilms.presentation.movies
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
